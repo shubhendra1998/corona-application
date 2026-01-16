@@ -1,32 +1,43 @@
-import React , {useEffect, useState} from 'react' ;
-
-import {NativeSelect ,FormControl} from '@material-ui/core';
-
+import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import { NativeSelect, FormControl } from '@material-ui/core';
 import styles from './Countrypicker.modules.css';
+import { fetchCountries } from '../../api';
 
-import {fetchcountries } from '../../api';
-const Countrypicker =( {handleCountryChange}) => {
-const [fetchedCountries,setFetchedCountries] = useState([]);
+const Countrypicker = ({ handleCountryChange }) => {
+  const [countries, setCountries] = useState([]);
 
-    useEffect( () => {
-        const fetchAPI  =async () => {
-            setFetchedCountries( await fetchcountries());
-        }
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const list = await fetchCountries();
+      if (mounted) setCountries(list);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-        fetchAPI();
-    }, [setFetchedCountries]);
-console.log(fetchedCountries);
-
- return (
-
-    <FormControl className={styles.FormControl}>
-        <NativeSelect defaultValue= " " onChange={(e) => handleCountryChange(e.target.value)}>
-            <option value="global">Global</option>
-            {fetchedCountries.map((country,i) => <option key ={i} value={country}>{country}</option>)}
-        </NativeSelect>
+  return (
+    <FormControl className={styles.formControl}>
+      <NativeSelect
+        defaultValue=""
+        onChange={(e) => handleCountryChange(e.target.value)}
+        inputProps={{ 'aria-label': 'Select country' }}
+      >
+        <option value="">Global</option>
+        {countries.map((country) => (
+          <option key={country} value={country}>
+            {country}
+          </option>
+        ))}
+      </NativeSelect>
     </FormControl>
- )
+  );
+};
 
-}
+Countrypicker.propTypes = {
+  handleCountryChange: PropTypes.func.isRequired,
+};
 
- export default Countrypicker;
+export default Countrypicker;

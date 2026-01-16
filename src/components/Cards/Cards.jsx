@@ -1,85 +1,70 @@
 import React from 'react';
-import {Card, CardContent, Typography, Grid} from '@material-ui/core';
-
-import styles from './Cards.module.css';
+import PropTypes from 'prop-types';
+import { Card, CardContent, Typography, Grid } from '@material-ui/core';
 import CountUp from 'react-countup';
-
 import cx from 'classnames';
-const Cards =({data: {confirmed, recovered,deaths, lastUpdate }} ) => {
-   
-   if(!confirmed) {
- return 'Loading...';
-   }
- //  console.log(props);
- return (
-  <div className={styles.container}>
-     <Grid container spacing={3} justify ="center">
-        <Grid item component ={Card} xs={12} md={3} className={cx(styles.card,styles.infected)}>
-           <CardContent>
-              <Typography color="textSecondary" gutterBottom>Infected
+import styles from './Cards.module.css';
 
-              </Typography>
- <Typography varaint ="h5">
-    
-   <CountUp
-   start ={0}
-   end ={confirmed.value}
-   duration ={2.5}
-   seperator =","
+const Cards = ({ data: { confirmed, recovered, deaths, lastUpdate } = {} }) => {
+  if (!confirmed) {
+    return <Typography>Loading...</Typography>;
+  }
 
- />
-    </Typography>
-           <Typography color="textSecondary">{new Date(lastUpdate).toString()}</Typography>
-           <Typography variant ="body2">Number of active cases </Typography>
-           </CardContent>
+  const formattedDate = lastUpdate ? new Date(lastUpdate).toLocaleString() : '';
+
+  return (
+    <div className={styles.container}>
+      <Grid container spacing={3} justifyContent="center">
+        <Grid item component={Card} xs={12} md={3} className={cx(styles.card, styles.infected)}>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Infected
+            </Typography>
+            <Typography variant="h5">
+              <CountUp start={0} end={confirmed.value} duration={2.5} separator="," />
+            </Typography>
+            <Typography color="textSecondary">{formattedDate}</Typography>
+            <Typography variant="body2">Number of active cases</Typography>
+          </CardContent>
         </Grid>
 
-        <Grid item component ={Card} xs={12} md={3} className={cx(styles.card,styles.recovered)}>
-           <CardContent>
-              <Typography color="textSecondary" gutterBottom>recovered
-
-              </Typography>
-              <Typography varaint ="h5">
-    
-    <CountUp
-    start ={0}
-    end ={recovered.value}
-    duration ={2.5}
-    seperator =","
- 
-  />
-     </Typography>
-     <Typography color="textSecondary">{new Date(lastUpdate).toString()}</Typography>
-           <Typography variant ="body2">Number of Recovered cases </Typography>
-           </CardContent>
+        <Grid item component={Card} xs={12} md={3} className={cx(styles.card, styles.recovered)}>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Recovered
+            </Typography>
+            <Typography variant="h5">
+              <CountUp start={0} end={recovered.value} duration={2.5} separator="," />
+            </Typography>
+            <Typography color="textSecondary">{formattedDate}</Typography>
+            <Typography variant="body2">Number of recovered cases</Typography>
+          </CardContent>
         </Grid>
 
+        <Grid item component={Card} xs={12} md={3} className={cx(styles.card, styles.deaths)}>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Deaths
+            </Typography>
+            <Typography variant="h5">
+              <CountUp start={0} end={deaths.value} duration={2.5} separator="," />
+            </Typography>
+            <Typography color="textSecondary">{formattedDate}</Typography>
+            <Typography variant="body2">Number of deaths</Typography>
+          </CardContent>
+        </Grid>
+      </Grid>
+    </div>
+  );
+};
 
-        <Grid item component ={Card} xs={12} md={3} className={cx(styles.card,styles.deaths)}>
-           <CardContent>
-              <Typography color="textSecondary" gutterBottom>Deaths
+Cards.propTypes = {
+  data: PropTypes.shape({
+    confirmed: PropTypes.object,
+    recovered: PropTypes.object,
+    deaths: PropTypes.object,
+    lastUpdate: PropTypes.string,
+  }),
+};
 
-              </Typography>
-              <Typography varaint ="h5">
-    
-   <CountUp
-   start ={0} 
-   end ={deaths.value}
-   duration ={2.5}
-   seperator =","
-
- />
-    </Typography>
-    <Typography color="textSecondary">{new Date(lastUpdate).toString()}</Typography>
-           <Typography variant ="body2">Number of deaths  </Typography>
-           </CardContent>
-        </Grid>  
-
-     </Grid>
-  </div>
-  
- )
-
-}
-
- export default Cards;
+export default Cards;

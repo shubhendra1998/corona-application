@@ -1,41 +1,45 @@
-import React from 'react';
- import styles from './app.module.css';
+import React, { useEffect, useState } from 'react';
+import styles from './app.module.css';
+import { Cards, Chart, Countrypicker } from './components';
+import { fetchData } from './api';
 
- //import Card from './components/card/Card';
- //import Chart from './components/chart/Chart';
- //import Countrypicker from './components/countrypicker/Countrypicker';
+const App = () => {
+  const [data, setData] = useState({});
+  const [country, setCountry] = useState('');
+  const [loading, setLoading] = useState(true);
 
-import { Cards, Chart,Countrypicker } from './components';
-import {fetchData } from './api';
-class App extends React.Component {
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      const fetched = await fetchData();
+      if (mounted) {
+        setData(fetched || {});
+        setLoading(false);
+      }
+    })();
 
-  state = {
-    data: {},
-    country : ' ',
-  }
-  async componentDidMount() {
-    const fetchedData = await fetchData();
-    console.log(fetchedData);
-    this.setState({data: fetchedData});
-  // console.log(data);
-  }
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-  handleCountryChange = async(country) => {
-    const data = await fetchData(country);
+  const handleCountryChange = async (selectedCountry) => {
+    setLoading(true);
+    const fetched = await fetchData(selectedCountry);
+    setData(fetched || {});
+    setCountry(selectedCountry);
+    setLoading(false);
+  };
 
-    this.setState({ data , country :country});
-  } 
-  render() {
-    
-    return (
+  return (
     <div className={styles.container}>
-     <Cards data={this.state.data}/>
-     <Countrypicker  handleCountryChange={this.handleCountryChange} />
-     <Chart data={this.state.data} country={this.state.country} />
-     
-    
+      <Cards data={data} />
+      <Countrypicker handleCountryChange={handleCountryChange} />
+      <Chart data={data} country={country} />
+      {loading && <div style={{ marginTop: 12 }}>Loading data…</div>}
     </div>
-    );
-  }
- }
- export  default App;
+  );
+};
+
+export default App;

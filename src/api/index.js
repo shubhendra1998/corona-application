@@ -1,57 +1,71 @@
 import axios from 'axios';
 
-const url ='https://covid19.mathdro.id/api';
+/**
+ * Centralized API client.
+ * You can change API endpoint by setting REACT_APP_COVID_API in .env
+ */
+const BASE_URL = process.env.REACT_APP_COVID_API || 'https://covid19.mathdro.id/api';
+const client = axios.create({
+  baseURL: BASE_URL,
+  timeout: 10000,
+});
 
- export const fetchData =async (country) => {
-     let changableurl=url;
-
-     if(country) {
-         changableurl=`${url}/countries/${country}`
-     }
-    try {
- const {data :{ confirmed,recovered,deaths,lastUpdate} }  =await axios.get(changableurl);
-  return {
-     confirmed,
-     recovered,
-     deaths,
-     lastUpdate 
- };
- 
- //return response;
- //console.log(response);
-
-  //return modifiedData;
-    }
-    catch(error) {
-
-    }
-};
-
-export const fetchDailyData =async () => {
-     try {
- const { data } = await axios.get(`${url}/daily`);
-  
- const modifiedData =data.map((dailyData) => ({
- confirmed :dailyData.confirmed.total,
- deaths: dailyData.deaths.total,
- date :dailyData.reportDate,
- }));
- 
- console.log(data); 
- 
- return modifiedData;
+/**
+ * Fetch summary for global or a specific country.
+ * Returns { confirmed, recovered, deaths, lastUpdate } or null on error.
+ */
+export async function fetchData(country = '') {
+  try {
+    const target =
+      country && country.toLowerCase() !== 'global' && country !== ''
+        ? `/countries/${country}`
+        : '/';
+    const { data } = await client.get(target);
+    const { confirmed, recovered, deaths, lastUpdate } = data;
+    return { confirmed, recovered, deaths, lastUpdate };
+  } catch (error) {
+    // Keep the error visible during development; return null as a safe fallback
+    // Consider reporting to an error-tracking service in production
+    // eslint-disable-next-line no-console
+    console.error('[api][fetchData] error:', error.message || error);
+    return null;
+  }
 }
-     catch {
 
-     }
-};
+/**
+ * Fetch daily time-series data (global).
+ * Returns array of { confirmed, deaths, date } or [] on error.
+ */
+export async function fetchDailyData() {
+  try {
+    const { data } = await client.get('/daily');
+    const modifiedData = data.map((daily) => ({
+      confirmed: daily.confirmed.total,
+      deaths: daily.deaths.total,
+      date: daily.reportDate,
+    }));
+    return modifiedData;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[api][fetchDailyData] error:', error.message || error);
+    return [];
+  }
+}
 
-export const  fetchcountries =async () => {
-    try {
-  const {data : {countries }}  =await axios.get(`${url}/countries`);
-   return countries.map((country) => country.name);
+/**
+ * Fetch list of country names.
+ * Returns array of strings (country names) or [] on error.
+ */
+export async function fetchCountries() {
+  try {
+    const { data } = await client.get('/countries');
+    if (data && Array.isArray(data.countries)) {
+      return data.countries.map((c) => c.name);
     }
-    catch {
-
-    }
-};
+    return [];
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[api][fetchCountries] error:', error.message || error);
+    return [];
+  }
+}
