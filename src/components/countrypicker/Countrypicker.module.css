@@ -1,0 +1,11 @@
+.formControl {
+  margin: 1rem 0;
+  min-width: 200px;
+}
+
+/* Basic responsive behavior */
+@media (max-width: 600px) {
+  .formControl {
+    min-width: 120px;
+  }
+}
